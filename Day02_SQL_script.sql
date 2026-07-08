@@ -1,20 +1,22 @@
--- Day 02 SQL WB-02
+ -----MS SQL Server 
 
-DROP TABLE IF EXISTS shippings;
+IF OBJECT_ID('shippings', 'U') IS NOT NULL
+    DROP TABLE shippings;
+GO
 
 CREATE TABLE shippings (
-							id int primary key, 
+							id int primary key,
 							provider_name VARCHAR(25),
 							email_id VARCHAR(25)
 						);
+GO
 
 SELECT * FROM shipping;
 
 INSERT INTO shippings(email_id)
 VALUES
 (101, 'dhl')
-;	
-
+;	-- NOTE: 2 values supplied for 1 column, same mismatch as in original script - fix column list if this was unintentional
 
 
 
@@ -32,7 +34,7 @@ SET provider_name = 'Bluedart', email_id = '123@gmail.com'
 
 
 UPDATE shippings
-SET email_id = null
+SET email_id = NULL
 WHERE id = 102;
 
 
@@ -40,7 +42,7 @@ WHERE id = 102;
 -- DELETE 
 
 DELETE FROM shippings
-WHERE id = 103 
+WHERE id = 103
 
 
 SELECT * FROM shippings
@@ -51,7 +53,7 @@ ALTER TABLE shippings
 DROP COLUMN email_id;
 
 ALTER TABLE shippings
-ADD COLUMN email_id varchar(15);
+ADD email_id varchar(15);
 
 
 DELETE FROM shippings;
@@ -61,21 +63,19 @@ DROP TABLE shippings;
 
 
 -- RENAME table name
-ALTER TABLE shippings
-RENAME to shipping;
+EXEC sp_rename 'shippings', 'shipping';
 
 
-ALTER TABLE shipping
-RENAME COLUMN email_id to emails;
+EXEC sp_rename 'shipping.email_id', 'emails', 'COLUMN';
 
 
 SELECT * FROM shipping
 -- 
 
--- UPDATE datatypes of a exisiting columns
+-- UPDATE datatypes of an existing column
 
 ALTER TABLE shipping
-ALTER COLUMN emails TYPE VARCHAR(15);
+ALTER COLUMN emails VARCHAR(15);
 
 -- ------------------------------
 -- Subquery 
@@ -84,7 +84,7 @@ ALTER COLUMN emails TYPE VARCHAR(15);
 
 /*
 
-Q.1 Find Top 5 states by total orders where each state sale is greater than average orders accross orders.
+Q.1 Find Top 5 states by total orders where each state sale is greater than average orders across orders.
 
 Q.2 Find the details of the top 5 products with the highest total sales, where the total sale for each product is greater than the average sale across all products.
 
@@ -97,7 +97,7 @@ Q.2 Find the details of the top 5 products with the highest total sales, where t
 -- average sale across all products.
 
 
--- WITH CTE2	
+-- ;WITH CTE2	
 -- AS
 -- 	(	
 -- 	SELECT * FROM sellers
@@ -106,7 +106,7 @@ Q.2 Find the details of the top 5 products with the highest total sales, where t
 	
 -- SELECT COUNT(*) FROM CTE2
 
-SELECT 
+SELECT TOP 5
 		product_id,
 		SUM(sale) as total_sale_by_p
 FROM orders
@@ -115,7 +115,7 @@ HAVING SUM(sale) > (SELECT
 					AVG(total_sale_by_p) as avg_sale -- 1241.82
 				FROM 
 					(
-					SELECT 
+					SELECT TOP 100 PERCENT
 						product_id,
 						SUM(sale) as total_sale_by_p
 					FROM orders
@@ -123,7 +123,6 @@ HAVING SUM(sale) > (SELECT
 					ORDER BY 2 DESC
 					) as avg_sale_table)		
 ORDER BY 2 DESC
-LIMIT 5
 
 
 SELECT *
@@ -150,10 +149,10 @@ VALUES
 	
 	
 SELECT 
-	ROUND(AVG(total_sale_by_p)::numeric, 2) as avg_sale -- 1241.82
+	ROUND(CAST(AVG(total_sale_by_p) AS NUMERIC), 2) as avg_sale -- 1241.82
 FROM 
 	(
-	SELECT 
+	SELECT TOP 100 PERCENT
 		product_id,
 		SUM(sale) as total_sale_by_p
 	FROM orders
@@ -174,7 +173,7 @@ FROM
 
 	
 
--- WITH CTE1
+-- ;WITH CTE1
 -- AS	
 -- (
 -- SELECT 
@@ -195,25 +194,24 @@ SELECT * FROM orders
 
 -- seller_id, seller_name, sum(total sale), order by desc sale, limit 3
 
-SELECT
+SELECT TOP 3
 	o.seller_id,
 	s.seller_name,
 	SUM(o.sale) as total_sales
 FROM orders as o
 JOIN sellers as s
 ON o.seller_id = s.seller_id	
-GROUP BY 1, 2
+GROUP BY o.seller_id, s.seller_name
 ORDER BY total_sales DESC
-LIMIT 3
 
 
-SELECT CONCAT ('Sam', ' ', 'Altman');
+SELECT CONCAT('Sam', ' ', 'Altman');
 
 SELECT * FROM customers
 WHERE customer_id = 'C10001';
 
 ALTER TABLE customers
-ADD COLUMN last_name VARCHAR(25);
+ADD last_name VARCHAR(25);
 
 INSERT INTO customers(customer_id, customer_name, last_name)
 VALUES
@@ -244,7 +242,7 @@ SELECT
 
 -- 
 
-SELECT RANDOM();
+SELECT RAND();
 
 -- Handling Null values
 
@@ -253,7 +251,7 @@ SELECT COUNT(*) FROM shipping
 WHERE provider_name IS NULL; 
 
 SELECT COUNT(*) FROM shipping
-WHERE provider_name IS NULL OR emails IS NULL OR 
+WHERE provider_name IS NULL OR emails IS NULL
 
 	
 SELECT * FROM orders
@@ -296,7 +294,7 @@ FROM products;
 
 -- Q.6
 
--- Identify returning customers: Label customers as "Returning" if they have placed more than one returns; otherwise, mark them as "New."
+-- Identify returning customers: Label customers as "Returning" if they have placed more than one return; otherwise, mark them as "New."
 
 
 SELECT * FROM orders;
@@ -356,8 +354,8 @@ ON o.order_id = r.order_id
 SELECT
 	o.order_id as orderid,
 	COUNT(*)
-	CASE 
-		WHEN r.return_id IS NOT NULL 
+	-- CASE 
+	-- 	WHEN r.return_id IS NOT NULL 
 FROM orders as o
 LEFT JOIN returns as r	
 ON o.order_id = r.order_id
@@ -367,10 +365,6 @@ WHERE r.return_id IS NOT NULL
 
 
 	
-
-
-
-
 
 -- avg 68
 -- max 3700
@@ -392,11 +386,6 @@ FROM
 	GROUP BY product_id
 ) as subquery
 WHERE rn <= 5
-
--- Solve Day 01/30 Days SQL challenge (From Zero_analyst 30 days sql challenge)
-
-
--- SQL Workshop B-02 Day 02 END
 
 
 
