@@ -52,10 +52,3 @@ To replicate the analysis or explore the dataset further, follow these steps:
 4. Execute the SQL queries provided in the repository to analyze the data and derive insights.
 5. Customize the analysis or queries as needed for your specific objectives.
 
-## Conclusion
-Through this project, we aim to provide valuable insights into Amazon sales trends, customer
-preferences, and other factors influencing e-commerce operations. By analyzing the dataset
-and addressing the key questions, we hope to assist stakeholders in making informed decisions
-and optimizing their sales strategies.
-
-Feel free to explore the repository and contribute to further analysis or enhancements!
